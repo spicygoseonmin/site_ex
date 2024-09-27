@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      h1 {
+        text-align: center;
+      }
+      #produst-container {
+        display: flex;
+        gap: 10px;
+        padding: 0 10px;
+        margin: 0 auto;
+        width: 100%;
+        max-width: 1000px;
+      }
+      .product-card {
+        width: calc(100% / 4);
+        background-color: rgb(255, 255, 255);
+        border: 1px solid #44444459;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .product-card > .product-img-wrap {
+        height: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .product-card > .product-img-wrap > img {
+        height: 100%;
+      }
+      .product-text {
+        padding: 10px;
+      }
+      #load-more-btn {
+        color: #fff;
+        display: block;
+        position: relative;
+        margin: 40px auto 0;
+        padding: 10px 40px;
+        border-radius: 30px;
+        border: none;
+        background-color: #1c77ff;
+      }
+      #load-more-btn:hover {
+        background-color: #176beb;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>제품 리스트</h1>
+    <div id="produst-container">
+      <!-- js 출력 -->
+    </div>
+    <button id="load-more-btn">더보기</button>
+    <script>
+      $(document).ready(function () {
+        let currentPage = 1;
+        let productsPerPage = 4;
+        let allProducts = [];
+        function ajaxProducts(page) {
+          $.ajax({
+            url: "products.json",
+            method: "get",
+            dataType: "json",
+            success: function (data) {
+              // console.log(data)
+              //   console.log(allProducts);
+              allProducts = data.products;
+              //   console.log(allProducts);
+              renderProducts(page);
+            },
+            error: function (xhr, status, error) {
+              console.error("Failed to load products data:", error);
+            },
+          });
+        }
+        // 보여주는 함수
+        function renderProducts() {
+        //   console.log(page);
+          let $container = $("#produst-container");
+          let $startIndex = (page - 1) * productsPerPage;
+          // console.log($startIndex)
+          let endIndex = $startIndex + productsPerPage;
+        //   console.log(endIndex);
+          let productsToRender = allProducts.slice($startIndex, endIndex);
+        //   console.log(productsToRender);
+          if (productsToRender.length === 0) {
+            $("#load-more-btn").hide();
+            return;
+          }
+          productsToRender.forEach(function (products) {
+            let productCard = `    
+            <div class="product-card">
+            <div class= "product-img-wrap">
+                <img src="${products.image}" alt="${products.name}">
+            </div>
+            <div class= "product-text">
+            <h3>${products.name}</h3>
+            <p class="category">종류:${products.category}</p>
+            <p class="price">가격:${products.price}</p>
+            </div>
+            </div>
+            `;
+            $container.append(productCard);
+          });
+          if(endIndex >= allProducts.length){
+            $("#load-more-btn").hide();
+          }else{
+            $("#load-more-btn").show();
+          }
+        }
+        // 더보기 함수
+        $("#load-more-btn").on("click", function(){
+            // ++은 기본값에서 1씩 더해줌
+            currentPage++
+            console.log(currentPage)
+            renderProducts()
+        })
+        ajaxProducts(currentPage);
+      });
+    </script>
+  </body>
+</html>
